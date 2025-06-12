@@ -23,7 +23,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-ocean">
               Global Agro TradeWave
             </div>
           </Link>
@@ -36,8 +36,8 @@ const Navigation = () => {
                 to={item.path}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive(item.path)
-                    ? 'text-green-600 bg-green-50'
-                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                    ? 'text-ocean bg-lime/20'
+                    : 'text-gray-700 hover:text-ocean hover:bg-lime/10'
                 }`}
               >
                 {item.name}
@@ -49,7 +49,7 @@ const Navigation = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-green-600 focus:outline-none focus:text-green-600"
+              className="text-gray-700 hover:text-ocean focus:outline-none focus:text-ocean"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -66,8 +66,8 @@ const Navigation = () => {
                   to={item.path}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
                     isActive(item.path)
-                      ? 'text-green-600 bg-green-50'
-                      : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                      ? 'text-ocean bg-lime/20'
+                      : 'text-gray-700 hover:text-ocean hover:bg-lime/10'
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
