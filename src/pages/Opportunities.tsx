@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Package, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { sendOpportunityEmail } from '@/utils/emailService';
 
 const Opportunities = () => {
   const [opportunities, setOpportunities] = useState([
@@ -56,23 +58,38 @@ const Opportunities = () => {
     type: 'Export'
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const opportunity = {
-      id: opportunities.length + 1,
-      ...newOpportunity,
-      status: 'Active'
-    };
-    setOpportunities([...opportunities, opportunity]);
-    setNewOpportunity({
-      title: '',
-      description: '',
-      product: '',
-      quantity: '',
-      location: '',
-      deadline: '',
-      type: 'Export'
-    });
+    setIsSubmitting(true);
+    
+    try {
+      await sendOpportunityEmail(newOpportunity);
+      
+      const opportunity = {
+        id: opportunities.length + 1,
+        ...newOpportunity,
+        status: 'Active'
+      };
+      
+      setOpportunities([...opportunities, opportunity]);
+      toast.success('Opportunity submitted successfully! We will review and contact you soon.');
+      
+      setNewOpportunity({
+        title: '',
+        description: '',
+        product: '',
+        quantity: '',
+        location: '',
+        deadline: '',
+        type: 'Export'
+      });
+    } catch (error) {
+      toast.error('Failed to submit opportunity. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -80,7 +97,7 @@ const Opportunities = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">Trade Opportunities</h1>
@@ -102,10 +119,10 @@ const Opportunities = () => {
               <Card key={opportunity.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
-                    <Badge variant={opportunity.type === 'Export' ? 'default' : 'secondary'}>
+                    <Badge variant={opportunity.type === 'Export' ? 'default' : 'secondary'} className="bg-ocean text-white">
                       {opportunity.type}
                     </Badge>
-                    <Badge variant="outline" className="text-green-600 border-green-600">
+                    <Badge variant="outline" className="text-lime-dark border-lime-dark">
                       {opportunity.status}
                     </Badge>
                   </div>
@@ -131,7 +148,7 @@ const Opportunities = () => {
                       <span><strong>Deadline:</strong> {opportunity.deadline}</span>
                     </div>
                   </div>
-                  <Button className="w-full mt-6 bg-green-600 hover:bg-green-700">
+                  <Button className="w-full mt-6 bg-ocean hover:bg-ocean-light text-white">
                     Apply for Partnership
                   </Button>
                 </CardContent>
@@ -140,7 +157,7 @@ const Opportunities = () => {
           </div>
 
           {/* Add New Opportunity Form */}
-          <div className="bg-gray-50 p-8 rounded-2xl">
+          <div className="bg-lime/5 p-8 rounded-2xl">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Add New Trade Opportunity</h2>
             <p className="text-gray-600 mb-8">
               Have a new trade opportunity? Share it with our network of global partners.
@@ -168,7 +185,7 @@ const Opportunities = () => {
                   <select
                     value={newOpportunity.type}
                     onChange={(e) => setNewOpportunity({...newOpportunity, type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ocean"
                     required
                   >
                     <option value="Export">Export</option>
@@ -241,8 +258,12 @@ const Opportunities = () => {
                 />
               </div>
               
-              <Button type="submit" className="bg-green-600 hover:bg-green-700 px-8">
-                Add Opportunity
+              <Button 
+                type="submit" 
+                className="bg-ocean hover:bg-ocean-light text-white px-8"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Add Opportunity'}
               </Button>
             </form>
           </div>

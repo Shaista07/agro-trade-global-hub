@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { sendContactEmail } from '@/utils/emailService';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -17,22 +18,30 @@ const Contact = () => {
     message: '',
     subject: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    console.log('Form submitted:', formData);
-    toast.success('Thank you for your message! We will get back to you soon.');
+    setIsSubmitting(true);
     
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      message: '',
-      subject: ''
-    });
+    try {
+      await sendContactEmail(formData);
+      toast.success('Thank you for your message! We will get back to you soon.');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        message: '',
+        subject: ''
+      });
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -47,7 +56,7 @@ const Contact = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">Contact Us</h1>
@@ -73,8 +82,8 @@ const Contact = () => {
               
               <div className="space-y-6">
                 <div className="flex items-start">
-                  <div className="bg-green-100 p-3 rounded-full mr-4">
-                    <Phone className="h-6 w-6 text-green-600" />
+                  <div className="bg-lime/30 p-3 rounded-full mr-4">
+                    <Phone className="h-6 w-6 text-ocean" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Phone</h3>
@@ -84,8 +93,8 @@ const Contact = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-blue-100 p-3 rounded-full mr-4">
-                    <Mail className="h-6 w-6 text-blue-600" />
+                  <div className="bg-ocean/20 p-3 rounded-full mr-4">
+                    <Mail className="h-6 w-6 text-ocean" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Email</h3>
@@ -95,8 +104,8 @@ const Contact = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-orange-100 p-3 rounded-full mr-4">
-                    <MapPin className="h-6 w-6 text-orange-600" />
+                  <div className="bg-lime/20 p-3 rounded-full mr-4">
+                    <MapPin className="h-6 w-6 text-ocean" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Address</h3>
@@ -106,8 +115,8 @@ const Contact = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-purple-100 p-3 rounded-full mr-4">
-                    <Clock className="h-6 w-6 text-purple-600" />
+                  <div className="bg-ocean/10 p-3 rounded-full mr-4">
+                    <Clock className="h-6 w-6 text-ocean" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Business Hours</h3>
@@ -120,7 +129,7 @@ const Contact = () => {
             </div>
 
             {/* Contact Form */}
-            <div className="bg-gray-50 p-8 rounded-2xl">
+            <div className="bg-lime/5 p-8 rounded-2xl">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -190,7 +199,7 @@ const Contact = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ocean"
                     required
                   >
                     <option value="">Select a subject</option>
@@ -219,9 +228,10 @@ const Contact = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
+                  className="w-full bg-ocean hover:bg-ocean-light text-white py-3 text-lg font-semibold"
+                  disabled={isSubmitting}
                 >
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </div>
@@ -230,13 +240,13 @@ const Contact = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-green-600">
+      <section className="py-20 bg-ocean">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">Ready to Start Trading?</h2>
-          <p className="text-xl text-green-100 mb-8">
+          <p className="text-xl text-lime/80 mb-8">
             Join our network of successful traders and expand your business globally
           </p>
-          <Button className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
+          <Button className="bg-lime text-ocean hover:bg-lime/90 px-8 py-3 text-lg font-semibold">
             Explore Trade Opportunities
           </Button>
         </div>

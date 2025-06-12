@@ -1,7 +1,7 @@
 
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
-import { CheckCircle, Target, Eye, Heart } from 'lucide-react';
+import { CheckCircle, Target, Eye, Heart, Users, Shield, Leaf, Star, ArrowRight } from 'lucide-react';
 
 const About = () => {
   return (
@@ -9,7 +9,7 @@ const About = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">About Global TradeWave</h1>
@@ -39,8 +39,8 @@ const About = () => {
             </div>
             <div>
               <img 
-                src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80" 
-                alt="Team collaboration" 
+                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=800&h=600" 
+                alt="Modern business team collaborating on international trade strategies" 
                 className="rounded-2xl shadow-lg w-full h-[400px] object-cover"
               />
             </div>
@@ -48,28 +48,48 @@ const About = () => {
 
           {/* Mission Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-            <div className="bg-green-50 p-8 rounded-2xl">
+            <div className="bg-lime/10 p-8 rounded-2xl">
               <div className="flex items-center mb-4">
-                <Heart className="h-8 w-8 text-green-600 mr-3" />
+                <Heart className="h-8 w-8 text-ocean mr-3" />
                 <h3 className="text-2xl font-bold text-gray-900">Empowering Farmers</h3>
               </div>
-              <h4 className="text-lg font-semibold text-green-600 mb-2">Building a Sustainable Future</h4>
-              <p className="text-gray-600">
+              <h4 className="text-lg font-semibold text-ocean mb-2">Building a Sustainable Future</h4>
+              <p className="text-gray-600 mb-4">
                 We work directly with farmers and agricultural communities to create sustainable 
                 supply chains that benefit everyone in the ecosystem.
               </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <Users className="h-5 w-5 text-ocean mr-2" />
+                  <span className="text-gray-600">Direct partnerships with 500+ farmers</span>
+                </div>
+                <div className="flex items-center">
+                  <Leaf className="h-5 w-5 text-ocean mr-2" />
+                  <span className="text-gray-600">Promoting organic and sustainable farming practices</span>
+                </div>
+              </div>
             </div>
             
-            <div className="bg-blue-50 p-8 rounded-2xl">
+            <div className="bg-ocean/10 p-8 rounded-2xl">
               <div className="flex items-center mb-4">
-                <Target className="h-8 w-8 text-blue-600 mr-3" />
+                <Target className="h-8 w-8 text-ocean mr-3" />
                 <h3 className="text-2xl font-bold text-gray-900">Superior Quality</h3>
               </div>
-              <h4 className="text-lg font-semibold text-blue-600 mb-2">Setting Industry Benchmarks</h4>
-              <p className="text-gray-600">
+              <h4 className="text-lg font-semibold text-ocean mb-2">Setting Industry Benchmarks</h4>
+              <p className="text-gray-600 mb-4">
                 Our commitment to excellence ensures that we deliver only the finest products 
                 that meet international quality standards.
               </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <Shield className="h-5 w-5 text-ocean mr-2" />
+                  <span className="text-gray-600">ISO 9001 and HACCP certified facilities</span>
+                </div>
+                <div className="flex items-center">
+                  <Star className="h-5 w-5 text-ocean mr-2" />
+                  <span className="text-gray-600">99.8% customer satisfaction rate globally</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -104,7 +124,7 @@ const About = () => {
           </div>
 
           {/* Supply Chain Process */}
-          <div className="bg-gray-50 p-8 rounded-2xl">
+          <div className="bg-lime/5 p-8 rounded-2xl">
             <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Our Supply Chain Process</h2>
             <p className="text-lg text-gray-600 text-center mb-12">
               Our supply chain begins with meticulous sourcing, where we select high-quality raw materials 
@@ -112,37 +132,72 @@ const About = () => {
               foundation for the entire process.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-green-600 font-bold text-xl">1</span>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+              {/* Step 1 */}
+              <div className="text-center relative">
+                <div className="bg-ocean w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <span className="text-white font-bold text-2xl">1</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Sourcing</h3>
-                <p className="text-gray-600">Meticulous selection of high-quality raw materials</p>
+                <h3 className="text-xl font-semibold mb-2 text-ocean">Sourcing</h3>
+                <p className="text-gray-600 mb-4">Meticulous selection of high-quality raw materials from certified suppliers worldwide</p>
+                <div className="hidden md:block absolute top-10 -right-4 text-ocean">
+                  <ArrowRight className="h-6 w-6" />
+                </div>
               </div>
               
-              <div className="text-center">
-                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-blue-600 font-bold text-xl">2</span>
+              {/* Step 2 */}
+              <div className="text-center relative">
+                <div className="bg-lime w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <span className="text-ocean font-bold text-2xl">2</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Quality Check</h3>
-                <p className="text-gray-600">Rigorous quality control at every stage</p>
+                <h3 className="text-xl font-semibold mb-2 text-ocean">Quality Check</h3>
+                <p className="text-gray-600 mb-4">Rigorous quality control testing at certified laboratories and inspection facilities</p>
+                <div className="hidden md:block absolute top-10 -right-4 text-ocean">
+                  <ArrowRight className="h-6 w-6" />
+                </div>
               </div>
               
-              <div className="text-center">
-                <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-orange-600 font-bold text-xl">3</span>
+              {/* Step 3 */}
+              <div className="text-center relative">
+                <div className="bg-ocean w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <span className="text-white font-bold text-2xl">3</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Packing</h3>
-                <p className="text-gray-600">Expert packaging for safe transportation</p>
+                <h3 className="text-xl font-semibold mb-2 text-ocean">Packing</h3>
+                <p className="text-gray-600 mb-4">Expert packaging using food-grade materials ensuring product integrity during transit</p>
+                <div className="hidden md:block absolute top-10 -right-4 text-ocean">
+                  <ArrowRight className="h-6 w-6" />
+                </div>
               </div>
               
+              {/* Step 4 */}
               <div className="text-center">
-                <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-purple-600 font-bold text-xl">4</span>
+                <div className="bg-lime w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <span className="text-ocean font-bold text-2xl">4</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Shipping</h3>
-                <p className="text-gray-600">Reliable global shipping and logistics</p>
+                <h3 className="text-xl font-semibold mb-2 text-ocean">Shipping</h3>
+                <p className="text-gray-600">Reliable global shipping with real-time tracking and insurance coverage</p>
+              </div>
+            </div>
+            
+            {/* Process Flow Visualization */}
+            <div className="mt-12 bg-white p-6 rounded-xl shadow-lg">
+              <h4 className="text-lg font-semibold text-center mb-6 text-ocean">End-to-End Supply Chain Flow</h4>
+              <div className="flex flex-wrap justify-center items-center gap-4 text-sm">
+                <div className="bg-ocean/10 px-4 py-2 rounded-full">Farmer/Supplier</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-lime/30 px-4 py-2 rounded-full">Quality Testing</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-ocean/10 px-4 py-2 rounded-full">Processing</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-lime/30 px-4 py-2 rounded-full">Packaging</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-ocean/10 px-4 py-2 rounded-full">Warehousing</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-lime/30 px-4 py-2 rounded-full">Export Documentation</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-ocean/10 px-4 py-2 rounded-full">International Shipping</div>
+                <ArrowRight className="h-4 w-4 text-ocean" />
+                <div className="bg-lime/30 px-4 py-2 rounded-full">Customer Delivery</div>
               </div>
             </div>
           </div>

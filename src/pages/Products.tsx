@@ -21,7 +21,7 @@ const Products = () => {
       id: 2,
       name: 'Raw Cashew Nuts',
       description: 'Premium quality raw cashew nuts sourced directly from certified plantations',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&q=80',
+      image: 'https://images.unsplash.com/photo-1609501676725-7186f01ea0c2?auto=format&fit=crop&q=80&w=800&h=600',
       varieties: [
         'Grade W-180 - Large, whole cashews with premium quality',
         'Grade W-210 - Medium-sized whole cashews for commercial use',
@@ -48,7 +48,7 @@ const Products = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">Our Premium Products</h1>
@@ -94,7 +94,7 @@ const Products = () => {
                       <ul className="space-y-3">
                         {product.varieties.map((variety, varIndex) => (
                           <li key={varIndex} className="flex items-start">
-                            <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <div className="w-2 h-2 bg-ocean rounded-full mt-2 mr-3 flex-shrink-0"></div>
                             <span className="text-gray-700">{variety}</span>
                           </li>
                         ))}
@@ -109,7 +109,7 @@ const Products = () => {
       </section>
 
       {/* Quality Assurance Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-lime/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Quality Assurance</h2>
@@ -120,24 +120,24 @@ const Products = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-green-600 font-bold text-2xl">✓</span>
+              <div className="bg-lime/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-ocean font-bold text-2xl">✓</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">Certified Sources</h3>
               <p className="text-gray-600">All products sourced from certified and trusted suppliers</p>
             </div>
             
             <div className="text-center p-6">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold text-2xl">✓</span>
+              <div className="bg-ocean/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-ocean font-bold text-2xl">✓</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">Lab Tested</h3>
               <p className="text-gray-600">Comprehensive laboratory testing for quality and purity</p>
             </div>
             
             <div className="text-center p-6">
-              <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-orange-600 font-bold text-2xl">✓</span>
+              <div className="bg-lime/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-ocean font-bold text-2xl">✓</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">International Standards</h3>
               <p className="text-gray-600">Compliant with global quality and safety standards</p>
