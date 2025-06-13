@@ -38,8 +38,8 @@ const Index = () => {
             </div>
             <div className="relative">
               <img 
-                src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800&h=600" 
-                alt="Premium rice grains, raw cashew nuts in shells, and teakwood - our core export products" 
+                src="https://images.unsplash.com/photo-1465379944081-7f47de8d74ac?auto=format&fit=crop&q=80&w=800&h=600" 
+                alt="Agricultural farm with cattle grazing in green fields - representing our premium agricultural exports" 
                 className="rounded-2xl shadow-2xl w-full h-[500px] object-cover"
               />
               <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-lg">
