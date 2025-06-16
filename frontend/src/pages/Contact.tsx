@@ -9,7 +9,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { sendContactEmail } from '../utils/emailService';
+import { sendContactEmail } from '../utils/backendService.ts';
 
 const Contact = () => {
   const [formData, setFormData] = useState({

@@ -1,51 +1,25 @@
-
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Calendar, MapPin, Package, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import {Calendar, MapPin, Package, ShieldCheck, Trash2, TrendingUp} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { sendOpportunityEmail } from '../utils/emailService';
-import {Link} from "react-router-dom";
+import { createOpportunity, getOpportunities, updateOpportunityStatus, deleteOpportunity as deleteOpportunityAPI } from '../utils/backendService.ts';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import { Link, useLocation } from 'react-router-dom';
+
+const ADMIN_USERNAME = 's_aiman';
+const ADMIN_PASSWORD = 'shaista123';
 
 const Opportunities = () => {
-  const [opportunities, setOpportunities] = useState([
-    {
-      id: 1,
-      title: 'Premium IR64 5% Broken Rice Export',
-      description: 'Seeking partners for bulk export of premium Basmati rice to African markets',
-      product: 'IR64 parboiled',
-      quantity: '540 MT',
-      location: 'Lome, Togo',
-      deadline: '2025-08-15',
-      status: 'Active',
-      type: 'Export'
-    },
-    {
-      id: 2,
-      title: 'Raw Cashew Import Partnership',
-      description: 'Looking for reliable suppliers of raw cashew nuts from West African regions',
-      product: 'Raw Cashew Nuts',
-      quantity: '216 MT',
-      location: 'Mangalore (India)',
-      deadline: '2025-08-15',
-      status: 'Active',
-      type: 'Import'
-    },
-    // {
-    //   id: 3,
-    //   title: 'Teak Wood Supply Contract',
-    //   description: 'Long-term contract for sustainable teak wood supply to European furniture manufacturers',
-    //   product: 'Teak Wood',
-    //   quantity: '1000 Cubic Meters',
-    //   location: 'Germany, Netherlands',
-    //   deadline: '2024-02-10',
-    //   status: 'Active',
-    //   type: 'Export'
-    // }
-  ]);
+  const location = useLocation();
+  const isAdmin = location.pathname === '/admin-opportunities';
+
+  const [authenticated, setAuthenticated] = useState(false);
+  const [opportunities, setOpportunities] = useState([]);
 
   const [newOpportunity, setNewOpportunity] = useState({
     title: '',
@@ -59,22 +33,39 @@ const Opportunities = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAdmin) {
+      const user = prompt('Enter admin username:');
+      const pass = prompt('Enter admin password:');
+      if (user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
+        setAuthenticated(true);
+      } else {
+        alert('Unauthorized');
+        window.location.href = '/';
+      }
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getOpportunities();
+        setOpportunities(data);
+      } catch (error) {
+        toast.error('Failed to load opportunities');
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      await sendOpportunityEmail(newOpportunity);
-      
-      const opportunity = {
-        id: opportunities.length + 1,
-        ...newOpportunity,
-        status: 'Active'
-      };
-      
-      setOpportunities([...opportunities, opportunity]);
-      toast.success('Opportunity submitted successfully! We will review and contact you soon.');
-      
+      const response = await createOpportunity(newOpportunity);
+      setOpportunities([...opportunities, response]);
+      toast.success('Opportunity submitted successfully!');
       setNewOpportunity({
         title: '',
         description: '',
@@ -84,195 +75,119 @@ const Opportunities = () => {
         deadline: '',
         type: 'Export'
       });
-    } catch (error) {
-      toast.error('Failed to submit opportunity. Please try again.');
+    } catch {
+      toast.error('Failed to submit opportunity.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const deleteOpportunity = async (id) => {
+    try {
+      await deleteOpportunityAPI(id);
+      setOpportunities(opportunities.filter(o => o.id !== id));
+      toast.success('Opportunity deleted.');
+    } catch {
+      toast.error('Delete failed');
+    }
+  };
+
+  const toggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+    try {
+      await updateOpportunityStatus(id, newStatus);
+      setOpportunities(
+          opportunities.map(o => o.id === id ? { ...o, status: newStatus } : o)
+      );
+    } catch {
+      toast.error('Status update failed');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      <Navigation />
-      
-      {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
+      <div className="min-h-screen bg-white">
+        <Navigation />
+
+        <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
+          <div className="max-w-7xl mx-auto px-4 py-20 text-center">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">Trade Opportunities</h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Explore current trade opportunities and partnerships. Connect with global markets 
-              and expand your business reach with Global TradeWave.
+              Explore and manage global trade opportunities.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Current Opportunities */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12">Current Open Opportunities</h2>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-20">
-            {opportunities.map((opportunity) => (
-              <Card key={opportunity.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge variant={opportunity.type === 'Export' ? 'default' : 'secondary'} className="bg-ocean text-white">
-                      {opportunity.type}
-                    </Badge>
-                    <Badge variant="outline" className="text-lime-dark border-lime-dark">
-                      {opportunity.status}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-xl font-bold">{opportunity.title}</CardTitle>
-                  <CardDescription>{opportunity.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Package className="w-4 h-4 mr-2" />
-                      <span><strong>Product:</strong> {opportunity.product}</span>
+        <section className="py-20">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-gray-900 mb-12">Current Open Opportunities</h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-20">
+              {opportunities.map((op) => (
+                  <Card key={op.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start mb-2">
+                        <Badge className="bg-ocean text-white">{op.type}</Badge>
+                        <Badge variant="outline" className="text-lime-dark border-lime-dark">{op.status}</Badge>
+                      </div>
+                      <CardTitle className="text-xl font-bold">{op.title}</CardTitle>
+                      <CardDescription>{op.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <p><Package className="w-4 h-4 inline-block mr-1" /><strong>Product:</strong> {op.product}</p>
+                        <p><TrendingUp className="w-4 h-4 inline-block mr-1" /><strong>Quantity:</strong> {op.quantity}</p>
+                        <p><MapPin className="w-4 h-4 inline-block mr-1" /><strong>Location:</strong> {op.location}</p>
+                        <p><Calendar className="w-4 h-4 inline-block mr-1" /><strong>Deadline:</strong> {op.deadline}</p>
+                      </div>
+
+                      {isAdmin && authenticated ? (
+                          <div className="flex gap-2 mt-4">
+                            <Button variant="destructive" onClick={() => deleteOpportunity(op.id)}><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
+                            <Button variant="secondary" onClick={() => toggleStatus(op.id, op.status)}>
+                              <ShieldCheck className="w-4 h-4 mr-1" />
+                              {op.status === 'Active' ? 'Mark Inactive' : 'Mark Active'}
+                            </Button>
+                          </div>
+                      ) : (
+                          <Button className="w-full mt-6 bg-ocean text-white">Apply for Partnership</Button>
+                      )}
+                    </CardContent>
+                  </Card>
+              ))}
+            </div>
+
+            {isAdmin && authenticated && (
+                <div className="bg-lime/5 p-8 rounded-2xl">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-6">Add New Trade Opportunity</h2>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Input required value={newOpportunity.title} onChange={e => setNewOpportunity({ ...newOpportunity, title: e.target.value })} placeholder="Title *" />
+                      <select
+                          value={newOpportunity.type}
+                          onChange={(e) => setNewOpportunity({...newOpportunity, type: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ocean"
+                          required
+                      >
+                        <option value="Export">Export</option>
+                        <option value="Import">Import</option>
+                      </select>
+                      <Input required value={newOpportunity.product} onChange={e => setNewOpportunity({ ...newOpportunity, product: e.target.value })} placeholder="Product *" />
+                      <Input required value={newOpportunity.quantity} onChange={e => setNewOpportunity({ ...newOpportunity, quantity: e.target.value })} placeholder="Quantity *" />
+                      <Input required value={newOpportunity.location} onChange={e => setNewOpportunity({ ...newOpportunity, location: e.target.value })} placeholder="Location *" />
+                      <Input type="date" required value={newOpportunity.deadline} onChange={e => setNewOpportunity({ ...newOpportunity, deadline: e.target.value })} />
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <TrendingUp className="w-4 h-4 mr-2" />
-                      <span><strong>Quantity:</strong> {opportunity.quantity}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      <span><strong>Location:</strong> {opportunity.location}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span><strong>Deadline:</strong> {opportunity.deadline}</span>
-                    </div>
-                  </div>
-                  <Link to="/contact">
-                    <Button className="w-full mt-6 bg-ocean hover:bg-ocean-light text-white">
-                      Apply for Partnership
+                    <Textarea rows={4} required value={newOpportunity.description} onChange={e => setNewOpportunity({ ...newOpportunity, description: e.target.value })} placeholder="Opportunity description..." />
+                    <Button type="submit" disabled={isSubmitting} className="bg-ocean text-white">
+                      {isSubmitting ? 'Submitting...' : 'Add Opportunity'}
                     </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+                  </form>
+                </div>
+            )}
           </div>
+        </section>
 
-          {/* Add New Opportunity Form */}
-         {/* <div className="bg-lime/5 p-8 rounded-2xl">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Add New Trade Opportunity</h2>
-            <p className="text-gray-600 mb-8">
-              Have a new trade opportunity? Share it with our network of global partners.
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Opportunity Title *
-                  </label>
-                  <Input
-                    type="text"
-                    value={newOpportunity.title}
-                    onChange={(e) => setNewOpportunity({...newOpportunity, title: e.target.value})}
-                    placeholder="e.g., Premium Rice Export to Europe"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Type *
-                  </label>
-                  <select
-                    value={newOpportunity.type}
-                    onChange={(e) => setNewOpportunity({...newOpportunity, type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ocean"
-                    required
-                  >
-                    <option value="Export">Export</option>
-                    <option value="Import">Import</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product *
-                  </label>
-                  <Input
-                    type="text"
-                    value={newOpportunity.product}
-                    onChange={(e) => setNewOpportunity({...newOpportunity, product: e.target.value})}
-                    placeholder="e.g., Basmati Rice, Cashew Nuts"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Quantity *
-                  </label>
-                  <Input
-                    type="text"
-                    value={newOpportunity.quantity}
-                    onChange={(e) => setNewOpportunity({...newOpportunity, quantity: e.target.value})}
-                    placeholder="e.g., 500 MT, 1000 Cubic Meters"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Target Location *
-                  </label>
-                  <Input
-                    type="text"
-                    value={newOpportunity.location}
-                    onChange={(e) => setNewOpportunity({...newOpportunity, location: e.target.value})}
-                    placeholder="e.g., UAE, Germany, Nigeria"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Deadline *
-                  </label>
-                  <Input
-                    type="date"
-                    value={newOpportunity.deadline}
-                    onChange={(e) => setNewOpportunity({...newOpportunity, deadline: e.target.value})}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
-                </label>
-                <Textarea
-                  value={newOpportunity.description}
-                  onChange={(e) => setNewOpportunity({...newOpportunity, description: e.target.value})}
-                  placeholder="Provide detailed information about the trade opportunity..."
-                  rows={4}
-                  required
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="bg-ocean hover:bg-ocean-light text-white px-8"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Add Opportunity'}
-              </Button>
-            </form>
-          </div>*/}
-        </div>
-      </section>
-
-      <Footer />
-    </div>
+        <Footer />
+      </div>
   );
 };
 
