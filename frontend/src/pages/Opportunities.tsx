@@ -32,27 +32,39 @@ const Opportunities = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
+
     if (isAdmin) {
-      const user = prompt('Enter admin username:');
-      const pass = prompt('Enter admin password:');
-      if (user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
-        setAuthenticated(true);
-      } else {
-        alert('Unauthorized');
-        window.location.href = '/';
-      }
+      setShowLogin(true);
     }
   }, [isAdmin]);
 
+  const handleLogin = () => {
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      setAuthenticated(true);
+      setShowLogin(false);
+    } else {
+      alert('Unauthorized');
+      window.location.href = '/';
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const data = await getOpportunities();
         setOpportunities(data);
       } catch (error) {
         toast.error('Failed to load opportunities');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -106,6 +118,16 @@ const Opportunities = () => {
 
   return (
       <div className="min-h-screen bg-white">
+        {showLogin && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded shadow-md w-full max-w-sm">
+                <h2 className="text-lg font-semibold mb-4">Admin Login</h2>
+                <Input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
+                <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="mt-2" />
+                <Button onClick={handleLogin} className="mt-4 bg-ocean text-white w-full">Login</Button>
+              </div>
+            </div>
+        )}
         <Navigation />
 
         <section className="pt-16 bg-gradient-to-br from-lime/20 to-ocean/10">
@@ -120,42 +142,52 @@ const Opportunities = () => {
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-3xl font-bold text-gray-900 mb-12">Current Open Opportunities</h2>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-20">
-              {opportunities.map((op) => (
-                  <Card key={op.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge className="bg-ocean text-white">{op.type}</Badge>
-                        <Badge variant="outline" className="text-lime-dark border-lime-dark">{op.status}</Badge>
-                      </div>
-                      <CardTitle className="text-xl font-bold">{op.title}</CardTitle>
-                      <CardDescription>{op.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm text-gray-700">
-                        <p><Package className="w-4 h-4 inline-block mr-1" /><strong>Product:</strong> {op.product}</p>
-                        <p><TrendingUp className="w-4 h-4 inline-block mr-1" /><strong>Quantity:</strong> {op.quantity}</p>
-                        <p><MapPin className="w-4 h-4 inline-block mr-1" /><strong>Location:</strong> {op.location}</p>
-                        <p><Calendar className="w-4 h-4 inline-block mr-1" /><strong>Deadline:</strong> {op.deadline}</p>
-                      </div>
-
-                      {isAdmin && authenticated ? (
-                          <div className="flex gap-2 mt-4">
-                            <Button variant="destructive" onClick={() => deleteOpportunity(op.id)}><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
-                            <Button variant="secondary" onClick={() => toggleStatus(op.id, op.status)}>
-                              <ShieldCheck className="w-4 h-4 mr-1" />
-                              {op.status === 'Active' ? 'Mark Inactive' : 'Mark Active'}
-                            </Button>
+            {isLoading ? (
+                <div className="text-center py-10">
+                  <svg className="animate-spin h-8 w-8 text-ocean mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  <p className="text-gray-600">Loading opportunities...</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-20">
+                  {opportunities.map((op) => (
+                      <Card key={op.id} className="hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex justify-between items-start mb-2">
+                            <Badge className="bg-ocean text-white">{op.type}</Badge>
+                            <Badge variant="outline" className="text-lime-dark border-lime-dark">{op.status}</Badge>
                           </div>
-                      ) : (
-                          <Button className="w-full mt-6 bg-ocean text-white">Apply for Partnership</Button>
-                      )}
-                    </CardContent>
-                  </Card>
-              ))}
-            </div>
+                          <CardTitle className="text-xl font-bold">{op.title}</CardTitle>
+                          <CardDescription>{op.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2 text-sm text-gray-700">
+                            <p><Package className="w-4 h-4 inline-block mr-1" /><strong>Product:</strong> {op.product}</p>
+                            <p><TrendingUp className="w-4 h-4 inline-block mr-1" /><strong>Quantity:</strong> {op.quantity}</p>
+                            <p><MapPin className="w-4 h-4 inline-block mr-1" /><strong>Location:</strong> {op.location}</p>
+                            <p><Calendar className="w-4 h-4 inline-block mr-1" /><strong>Deadline:</strong> {op.deadline}</p>
+                          </div>
 
+                          {isAdmin && authenticated ? (
+                              <div className="flex gap-2 mt-4">
+                                <Button variant="destructive" onClick={() => deleteOpportunity(op.id)}><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
+                                <Button variant="secondary" onClick={() => toggleStatus(op.id, op.status)}>
+                                  <ShieldCheck className="w-4 h-4 mr-1" />
+                                  {op.status === 'Active' ? 'Mark Inactive' : 'Mark Active'}
+                                </Button>
+                              </div>
+                          ) : (
+                              <Link to="/contact">
+                                <Button className="w-full mt-6 bg-ocean text-white">Apply for Partnership</Button>
+                              </Link>
+                          )}
+                        </CardContent>
+                      </Card>
+                  ))}
+                </div>
+            )}
             {isAdmin && authenticated && (
                 <div className="bg-lime/5 p-8 rounded-2xl">
                   <h2 className="text-3xl font-bold text-gray-900 mb-6">Add New Trade Opportunity</h2>
