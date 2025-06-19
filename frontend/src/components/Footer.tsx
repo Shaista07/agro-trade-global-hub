@@ -1,5 +1,6 @@
 
 import { Mail, Phone, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -9,7 +10,7 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <h3 className="text-2xl font-bold text-lime mb-4">
-              Global Agro TradeWave
+              Global TradeWave
             </h3>
             <p className="text-gray-300 mb-4">
               Your trusted partner in international trade, specializing in premium agricultural products and sustainable supply chain solutions.
@@ -20,10 +21,10 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="/about" className="text-gray-300 hover:text-lime transition-colors">About Us</a></li>
-              <li><a href="/products" className="text-gray-300 hover:text-lime transition-colors">Products</a></li>
-              <li><a href="/opportunities" className="text-gray-300 hover:text-lime transition-colors">Trade Opportunities</a></li>
-              <li><a href="/contact" className="text-gray-300 hover:text-lime transition-colors">Contact</a></li>
+              <li><Link to="/about" className="text-gray-300 hover:text-lime-500 transition-colors">About Us</Link></li>
+              <li><Link to="/products" className="text-gray-300 hover:text-lime transition-colors">Products</Link></li>
+              <li><Link to="/opportunities" className="text-gray-300 hover:text-lime transition-colors">Trade Opportunities</Link></li>
+              <li><Link to="/contact" className="text-gray-300 hover:text-lime transition-colors">Contact</Link></li>
             </ul>
           </div>
 

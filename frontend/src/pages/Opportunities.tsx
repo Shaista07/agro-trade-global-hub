@@ -56,19 +56,29 @@ const Opportunities = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchWithRetry = async (retries = 3, delay = 1000) => {
       setIsLoading(true);
-      try {
-        const data = await getOpportunities();
-        setOpportunities(data);
-      } catch (error) {
-        toast.error('Failed to load opportunities');
-      } finally {
-        setIsLoading(false);
+      for (let i = 0; i < retries; i++) {
+        try {
+          const data = await getOpportunities();
+          setOpportunities(data);
+          return;
+        } catch (error) {
+          if (i === retries - 1) {
+            toast.error('Failed to load opportunities');
+          } else {
+            await new Promise(res => setTimeout(res, delay));
+          }
+        } finally {
+          if (i === retries - 1) {
+            setIsLoading(false);
+          }
+        }
       }
     };
-    fetchData();
+    fetchWithRetry();
   }, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -167,7 +177,7 @@ const Opportunities = () => {
                             <p><Package className="w-4 h-4 inline-block mr-1" /><strong>Product:</strong> {op.product}</p>
                             <p><TrendingUp className="w-4 h-4 inline-block mr-1" /><strong>Quantity:</strong> {op.quantity}</p>
                             <p><MapPin className="w-4 h-4 inline-block mr-1" /><strong>Location:</strong> {op.location}</p>
-                            <p><Calendar className="w-4 h-4 inline-block mr-1" /><strong>Deadline:</strong> {op.deadline}</p>
+                            <p><Calendar className="w-4 h-4 inline-block mr-1" /><strong>Deadline:</strong> {op.deadline.toISOString().split('T')[0]}</p>
                           </div>
 
                           {isAdmin && authenticated ? (
