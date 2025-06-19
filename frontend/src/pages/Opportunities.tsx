@@ -58,27 +58,26 @@ const Opportunities = () => {
   useEffect(() => {
     const fetchWithRetry = async (retries = 3, delay = 1000) => {
       setIsLoading(true);
+
       for (let i = 0; i < retries; i++) {
         try {
           const data = await getOpportunities();
           setOpportunities(data);
-          return;
+          break; // Exit loop on success
         } catch (error) {
           if (i === retries - 1) {
             toast.error('Failed to load opportunities');
           } else {
             await new Promise(res => setTimeout(res, delay));
           }
-        } finally {
-          if (i === retries - 1) {
-            setIsLoading(false);
-          }
         }
       }
+
+      setIsLoading(false); // Always stop loading once loop ends
     };
+
     fetchWithRetry();
   }, []);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
