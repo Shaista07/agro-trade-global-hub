@@ -1,73 +1,93 @@
-# Welcome to your Lovable project
+# Global TradeWave — Website
 
-## Project info
+Official website for **Global Agro TradeWave Pvt. Ltd.** (globaltradewave.com)
 
-**URL**: https://lovable.dev/projects/1783291f-012c-4abb-b696-b3f740e2a640
+Two business verticals:
 
-## How can I edit this code?
+1. **International Import-Export** (`/#/products`) — rice, cashew, spices, pulses, teak wood
+2. **Fresh Produce (Domestic)** (`/#/fresh-produce`) — fruits & vegetables ecommerce-style catalogue with COD ordering via WhatsApp
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- React 19 + TypeScript + Vite
+- Tailwind CSS 3.4 + shadcn/ui
+- HashRouter (works on any static host — no server rewrite rules needed, direct links never 404)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1783291f-012c-4abb-b696-b3f740e2a640) and start prompting.
+## Repo Migration (first time only)
 
-Changes made via Lovable will be committed automatically to this repo.
+Move the old codebase into `archive/` and place this project at the repo root:
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+mkdir -p archive
+find . -maxdepth 1 -not -name '.' -not -name '.git' -not -name 'archive' -exec mv {} archive/ \;
+# now copy/unzip THIS project's files into the repo root, then:
+git add -A
+git commit -m "New website: two-vertical redesign; legacy code moved to archive/"
+git push
 ```
 
-**Edit a file directly in GitHub**
+## Mobile App (PWA)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The site is an installable **Progressive Web App** branded **"GTW Fresh"** —
+customers open the site on their phone and tap **Add to Home Screen** to get a
+real app icon that opens straight into the Fresh Produce shop in full-screen
+app mode (no browser chrome). Works on Android and iPhone, no app store needed.
 
-**Use GitHub Codespaces**
+- Manifest: `public/manifest.webmanifest` (opens at `/#/fresh-produce`)
+- App icons: `public/icons/`
+- Offline caching: `public/sw.js` — **bump `CACHE_VERSION` on every deploy**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Build & Deploy
 
-## What technologies are used for this project?
+```bash
+npm install
+npm run build      # outputs static site to dist/
+```
 
-This project is built with:
+Upload the **contents of `dist/`** to your web host — that folder is a drop-in
+replacement for the current live site. `_redirects` (Netlify) and `vercel.json`
+(Vercel) are included but not required, since hash routing works everywhere.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Updating Prices Daily (Google Sheet — recommended)
 
-## How can I deploy this project?
+The shop can read live prices from a Google Sheet you own — edit the sheet
+anytime and the site updates automatically, no rebuild or re-upload needed.
 
-Simply open [Lovable](https://lovable.dev/projects/1783291f-012c-4abb-b696-b3f740e2a640) and click on Share -> Publish.
+**One-time setup (5 minutes):**
 
-## Can I connect a custom domain to my Lovable project?
+1. Create a new Google Sheet. In the first tab, paste this header in row 1:
+   `id` | `price` | `available`
+2. Add one row per item, using the IDs from `src/data/produce.ts`, e.g.:
+   `potato` | `32` | `yes`
+3. **Share → General access → "Anyone with the link" → Viewer**
+4. Copy the sheet ID from the URL (the long code between `/d/` and `/edit`)
+5. Paste it into `src/data/site.ts` → `livePricesSheetId`, then
+   `npm run build` and upload `dist/` once. Done forever.
 
-Yes, you can!
+**Daily ops:** just edit the `price` column each morning. Set `available` to
+`no` to mark an item out of stock (shows "Stock mein nahi" on the site).
+Leave a price cell empty to fall back to the built-in default.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+If the sheet is ever unreachable, the site silently falls back to the
+built-in prices in `src/data/produce.ts` — the shop never breaks.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Editing Products in Code (alternative)
+
+Fresh produce catalogue: `src/data/produce.ts` — one line per item:
+
+```ts
+{ id: 'potato', name: 'Potato', hinglish: 'Aloo', hindi: 'आलू', category: 'vegetable', unit: 'kg', price: 30, icon: 'carrot' },
+```
+
+After editing: `npm run build` and re-upload `dist/`.
+
+Export products (rice, cashew, etc.): `src/data/products.ts`
+Company info / phone / WhatsApp number: `src/data/site.ts`
+
+## Contact & Orders
+
+- **WhatsApp (orders & enquiries):** +91 93362 79229 — set once in `src/data/site.ts`
+- **COD orders** arrive as structured WhatsApp messages with items, quantities, indicative total, and customer name / phone / address
+- **Enquiry form** delivers to info@globaltradewave.com via FormSubmit (one-time activation email on first submission)

@@ -1,0 +1,33 @@
+{
+  "name": "GTW Fresh — Fruits & Vegetables, Ghar Tak",
+  "short_name": "GTW Fresh",
+  "description": "Order farm-fresh fruits & vegetables with Cash on Delivery. B2C home delivery and B2B supply — by Global Agro TradeWave Pvt. Ltd.",
+  "id": "/",
+  "start_url": "/#/fresh-produce",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d262c",
+  "theme_color": "#0d262c",
+  "categories": ["shopping", "food"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
