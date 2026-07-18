@@ -18,14 +18,23 @@ import {
   MessageCircle,
   Bike,
   Banknote,
-  Store,
+  Percent,
+  Scissors,
   Loader2,
   Download,
 } from 'lucide-react'
 import { PRODUCE_ITEMS, DELIVERY_INFO } from '../data/produce'
 import type { ProduceItem } from '../data/produce'
+import {
+  tierFor,
+  unitRate,
+  retailRate,
+  wholesaleRate,
+  PRICING_NOTE,
+} from '../data/pricing'
 import { SITE } from '../data/site'
 import SectionHeading from '../components/SectionHeading'
+import PriceTrends from '../components/PriceTrends'
 import { useReveal } from '../hooks/useReveal'
 import { useLivePrices } from '../hooks/useLivePrices'
 import produceImg from '../assets/produce.jpg'
@@ -43,9 +52,25 @@ const ICONS: Record<string, typeof Apple> = {
 }
 
 type Filter = 'all' | 'vegetable' | 'fruit'
-type Cart = Record<string, number>
+
+interface CartLine {
+  qty: number
+  cut: boolean
+  cutNote: string
+}
+type Cart = Record<string, CartLine>
 
 const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`
+
+// Real product photos (one per produce id), bundled by Vite.
+const produceImages = import.meta.glob('../assets/produce/*.jpg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+
+function produceImage(id: string): string | undefined {
+  return produceImages[`../assets/produce/${id}.jpg`]
+}
 
 export default function FreshProduce() {
   useReveal()
@@ -91,7 +116,7 @@ export default function FreshProduce() {
     setShowInstall(false)
   }
 
-  // Catalogue with live sheet prices / availability merged over the defaults.
+  // Catalogue with live sheet/JSON base rates merged over the defaults.
   const pricedItems = useMemo(
     () =>
       PRODUCE_ITEMS.map((it) => {
@@ -121,26 +146,52 @@ export default function FreshProduce() {
   const cartEntries = useMemo(
     () =>
       Object.entries(cart)
-        .map(([id, qty]) => ({
-          item: pricedItems.find((p) => p.id === id)!,
-          qty,
-        }))
-        .filter((e) => e.item && e.qty > 0),
+        .map(([id, line]) => {
+          const item = pricedItems.find((p) => p.id === id)
+          if (!item || line.qty <= 0) return null
+          const rate = unitRate(item.price, line.qty, line.cut)
+          return { item, ...line, rate, lineTotal: rate * line.qty }
+        })
+        .filter((e): e is NonNullable<typeof e> => e !== null),
     [pricedItems, cart],
   )
-  const totalQty = cartEntries.reduce((s, e) => s + e.qty, 0)
-  const subtotal = cartEntries.reduce((s, e) => s + e.qty * e.item.price, 0)
+  const totalLines = cartEntries.length
+  const subtotal = cartEntries.reduce((s, e) => s + e.lineTotal, 0)
 
   function setQty(id: string, qty: number) {
     setCart((prev) => {
       const next = { ...prev }
-      if (qty <= 0) delete next[id]
-      else next[id] = qty
+      if (qty <= 0) {
+        delete next[id]
+      } else {
+        const existing = next[id]
+        next[id] = {
+          qty,
+          cut: existing?.cut ?? false,
+          cutNote: existing?.cutNote ?? '',
+        }
+      }
       return next
     })
   }
 
+  function setCut(id: string, cut: boolean) {
+    setCart((prev) =>
+      prev[id] ? { ...prev, [id]: { ...prev[id], cut } } : prev,
+    )
+  }
+
+  function setCutNote(id: string, cutNote: string) {
+    setCart((prev) =>
+      prev[id] ? { ...prev, [id]: { ...prev[id], cutNote } } : prev,
+    )
+  }
+
   function validate() {
+    if (cartEntries.length === 0) return 'Your basket is empty.'
+    const cutMissing = cartEntries.find((e) => e.cut && !e.cutNote.trim())
+    if (cutMissing)
+      return `Please describe the cut type for ${cutMissing.item.name} (${cutMissing.item.hinglish}).`
     if (!form.name.trim()) return 'Please enter your name.'
     if (!/^[6-9]\d{9}$/.test(form.phone.replace(/\s/g, '')))
       return 'Please enter a valid 10-digit Indian mobile number.'
@@ -152,18 +203,22 @@ export default function FreshProduce() {
   function placeOrder() {
     const err = validate()
     setFormError(err)
-    if (err || cartEntries.length === 0) return
+    if (err) return
     setPlacing(true)
 
-    const lines = cartEntries.map(
-      (e, i) =>
-        `${i + 1}. ${e.item.name} (${e.item.hinglish}) — ${e.qty} ${e.item.unit} @ ${inr(e.item.price)} = ${inr(e.qty * e.item.price)}`,
-    )
+    const itemLines: string[] = cartEntries.map((e, i) => {
+      const tier = tierFor(e.qty)
+      const base = `${i + 1}. ${e.item.name} (${e.item.hinglish}) — ${e.qty} ${e.item.unit} @ ${inr(e.rate)}/${e.item.unit} (${tier.short}) = ${inr(e.lineTotal)}`
+      return e.cut
+        ? `${base}\n   Fresh Cut +15%: ${e.cutNote.trim()}`
+        : base
+    })
+
     const message = [
-      'NEW ORDER — Global TradeWave Fresh (COD)',
-      '-----------------------------------',
-      ...lines,
-      '-----------------------------------',
+      'NEW ORDER — GTW Fresh (COD)',
+      '----------------------------',
+      ...itemLines,
+      '----------------------------',
       `Subtotal (indicative): ${inr(subtotal)}`,
       '',
       `Name: ${form.name.trim()}`,
@@ -171,6 +226,7 @@ export default function FreshProduce() {
       `Address: ${form.address.trim()}`,
       form.note.trim() ? `Note: ${form.note.trim()}` : '',
       'Payment: Cash on Delivery',
+      '(Rates: APMC max + quantity-tier margin; final bill confirmed here before dispatch)',
     ]
       .filter(Boolean)
       .join('\n')
@@ -190,9 +246,9 @@ export default function FreshProduce() {
             align="left"
             eyebrow="Domestic Vertical — Fresh Produce"
             title="Farm-fresh fruits & vegetables, delivered home"
-            subtitle="Sourced every morning from our farmer network and delivered to your doorstep. B2C home orders and B2B supply for restaurants, hotels and stores — pay cash on delivery."
+            subtitle="Sourced every morning from our farmer network and delivered to your doorstep. Retail to wholesale quantities, fresh-cut vegetables on request — pay cash on delivery."
           />
-          <div className="reveal mt-8 flex flex-wrap gap-4 text-sm">
+          <div className="reveal mt-8 flex flex-wrap gap-3 text-sm">
             <span className="inline-flex items-center gap-2 rounded-full bg-brand-900/70 px-4 py-2 text-brand-100 ring-1 ring-brand-800">
               <Bike className="h-4 w-4 text-leaf-300" />
               Home delivery — {DELIVERY_INFO.areas}
@@ -202,8 +258,12 @@ export default function FreshProduce() {
               {DELIVERY_INFO.payment}
             </span>
             <span className="inline-flex items-center gap-2 rounded-full bg-brand-900/70 px-4 py-2 text-brand-100 ring-1 ring-brand-800">
-              <Store className="h-4 w-4 text-leaf-300" />
-              B2B: {DELIVERY_INFO.b2b}
+              <Percent className="h-4 w-4 text-leaf-300" />
+              Auto bulk discounts — 10 / 20 / 50+ kg tiers
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-brand-900/70 px-4 py-2 text-brand-100 ring-1 ring-brand-800">
+              <Scissors className="h-4 w-4 text-leaf-300" />
+              Fresh-cut vegetables, any cut you need
             </span>
           </div>
         </div>
@@ -244,14 +304,12 @@ export default function FreshProduce() {
           </div>
           <span
             className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold ${
-              live
-                ? 'bg-leaf-100 text-leaf-500'
-                : 'bg-sand text-brand-500'
+              live ? 'bg-leaf-100 text-leaf-500' : 'bg-sand text-brand-500'
             }`}
             title={
               live
-                ? 'Prices are being read live from the rate sheet'
-                : 'Showing standard prices — live sheet not connected'
+                ? 'Base rates are being read live from the daily mandi report'
+                : 'Showing standard base rates — live feed not connected'
             }
           >
             <span
@@ -259,7 +317,7 @@ export default function FreshProduce() {
                 live ? 'animate-pulse bg-[#25D366]' : 'bg-brand-300'
               }`}
             />
-            {live ? 'Live Rates' : 'Standard Rates'}
+            {live ? 'Live Mandi Rates' : 'Standard Rates'}
           </span>
         </div>
       </section>
@@ -311,15 +369,15 @@ export default function FreshProduce() {
               <ProduceCard
                 key={item.id}
                 item={item}
-                qty={cart[item.id] ?? 0}
+                qty={cart[item.id]?.qty ?? 0}
                 onQty={(q) => setQty(item.id, q)}
               />
             ))}
           </div>
         )}
         <p className="mt-10 rounded-2xl bg-sand px-5 py-4 text-center text-xs leading-relaxed text-brand-700">
-          {DELIVERY_INFO.note} Looking for something not listed here, or need
-          bulk supply for your restaurant / hotel / store?{' '}
+          {PRICING_NOTE} Something not listed, or bulk supply for your
+          restaurant / hotel / store?{' '}
           <a
             href={SITE.whatsapp}
             target="_blank"
@@ -331,6 +389,9 @@ export default function FreshProduce() {
           — we source on request.
         </p>
       </section>
+
+      {/* ── Price trends & forecast ──────────────────────── */}
+      <PriceTrends />
 
       {/* ── B2B band ─────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
@@ -349,9 +410,9 @@ export default function FreshProduce() {
                 Restaurant, hotel ya kirana store?
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-brand-200">
-                Get daily bulk supply at mandi-linked rates with a dedicated
-                account manager, standing orders and consolidated billing. One
-                message is all it takes to start.
+                Order 50+ kg straight from this page and wholesale rates apply
+                automatically. Fresh-cut vegetables prepared to your spec —
+                fine chop, julienne, dice, anything your kitchen needs.
               </p>
             </div>
             <a
@@ -373,7 +434,7 @@ export default function FreshProduce() {
       </section>
 
       {/* ── Floating basket button ───────────────────────── */}
-      {totalQty > 0 && !drawerOpen && (
+      {totalLines > 0 && !drawerOpen && (
         <button
           onClick={() => setDrawerOpen(true)}
           className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full bg-brand-900 py-3 pl-5 pr-6 text-cream shadow-[0_12px_40px_rgba(13,38,44,0.4)] transition-transform hover:scale-[1.03]"
@@ -381,7 +442,7 @@ export default function FreshProduce() {
           <span className="relative">
             <ShoppingBasket className="h-6 w-6" />
             <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-leaf-300 text-[11px] font-bold text-brand-950">
-              {totalQty}
+              {totalLines}
             </span>
           </span>
           <span className="text-sm font-semibold">
@@ -419,50 +480,123 @@ export default function FreshProduce() {
                 </p>
               ) : (
                 <ul className="space-y-4">
-                  {cartEntries.map(({ item, qty }) => {
-                    const Icon = ICONS[item.icon] ?? Leaf
+                  {cartEntries.map((e) => {
+                    const Icon = ICONS[e.item.icon] ?? Leaf
+                    const img = produceImage(e.item.id)
+                    const tier = tierFor(e.qty)
                     return (
                       <li
-                        key={item.id}
-                        className="flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-brand-100"
+                        key={e.item.id}
+                        className="rounded-2xl bg-white p-3 ring-1 ring-brand-100"
                       >
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-leaf-100 text-leaf-500">
-                          <Icon className="h-6 w-6" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-brand-950">
-                            {item.name} ({item.hinglish})
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f6f5f0] text-leaf-500">
+                            {img ? (
+                              <img
+                                src={img}
+                                alt={e.item.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Icon className="h-6 w-6" />
+                            )}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-brand-950">
+                              {e.item.name} ({e.item.hinglish})
+                            </p>
+                            <p className="text-xs text-brand-500">
+                              {inr(e.rate)}/{e.item.unit} · {tier.short}
+                              {e.cut && ' + cut'}
+                            </p>
+                          </div>
+                          <p className="text-sm font-bold text-brand-950">
+                            {inr(e.lineTotal)}
                           </p>
-                          <p className="text-xs text-brand-500">
-                            {inr(item.price)} / {item.unit}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1.5">
                           <button
-                            onClick={() => setQty(item.id, qty - 1)}
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-sand text-brand-800 hover:bg-brand-100"
+                            onClick={() => setQty(e.item.id, 0)}
+                            className="text-brand-400 hover:text-red-600"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {/* quantity controls */}
+                        <div className="mt-3 flex items-center gap-2">
+                          <button
+                            onClick={() => setQty(e.item.id, e.qty - 1)}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sand text-brand-800 hover:bg-brand-100"
                             aria-label="Decrease"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="w-6 text-center text-sm font-bold text-brand-950">
-                            {qty}
-                          </span>
+                          <div className="flex items-center gap-1 rounded-full bg-sand px-3 py-1.5">
+                            <input
+                              type="number"
+                              min={1}
+                              value={e.qty}
+                              onChange={(ev) =>
+                                setQty(
+                                  e.item.id,
+                                  Math.max(0, Math.floor(Number(ev.target.value) || 0)),
+                                )
+                              }
+                              className="w-14 bg-transparent text-center text-sm font-bold text-brand-950 outline-none"
+                            />
+                            <span className="text-xs text-brand-500">
+                              {e.item.unit}
+                            </span>
+                          </div>
                           <button
-                            onClick={() => setQty(item.id, qty + 1)}
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-sand text-brand-800 hover:bg-brand-100"
+                            onClick={() => setQty(e.item.id, e.qty + 1)}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sand text-brand-800 hover:bg-brand-100"
                             aria-label="Increase"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
+                          <div className="ml-auto flex gap-1">
+                            {[5, 10, 25, 50].map((n) => (
+                              <button
+                                key={n}
+                                onClick={() => setQty(e.item.id, n)}
+                                className={`rounded-full px-2 py-1 text-[11px] font-bold ${
+                                  e.qty === n
+                                    ? 'bg-brand-900 text-cream'
+                                    : 'bg-sand text-brand-600 hover:bg-brand-100'
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <button
-                          onClick={() => setQty(item.id, 0)}
-                          className="text-brand-400 hover:text-red-600"
-                          aria-label="Remove item"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+
+                        {/* fresh-cut option (vegetables only) */}
+                        {e.item.category === 'vegetable' && (
+                          <div className="mt-3 rounded-xl bg-sand/70 p-2.5">
+                            <label className="flex cursor-pointer items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={e.cut}
+                                onChange={(ev) => setCut(e.item.id, ev.target.checked)}
+                                className="h-4 w-4 rounded accent-brand-900"
+                              />
+                              <Scissors className="h-3.5 w-3.5 text-brand-600" />
+                              <span className="text-xs font-semibold text-brand-800">
+                                Fresh Cut +15% — kaat ke dijiye
+                              </span>
+                            </label>
+                            {e.cut && (
+                              <input
+                                value={e.cutNote}
+                                onChange={(ev) => setCutNote(e.item.id, ev.target.value)}
+                                placeholder="Cut type — e.g. fine chop, julienne, dice, slices…"
+                                className="mt-2 w-full rounded-lg border border-brand-200 bg-white px-3 py-2 text-xs outline-none focus:border-brand-500"
+                              />
+                            )}
+                          </div>
+                        )}
                       </li>
                     )
                   })}
@@ -478,7 +612,8 @@ export default function FreshProduce() {
                     </span>
                   </div>
                   <p className="rounded-xl bg-sand px-4 py-3 text-xs leading-relaxed text-brand-700">
-                    Payment: <strong>Cash on Delivery</strong>. Final bill is
+                    Payment: <strong>Cash on Delivery</strong>. Rates follow
+                    daily mandi maximums with quantity-tier margins — final bill
                     confirmed on WhatsApp before dispatch.
                   </p>
 
@@ -558,6 +693,7 @@ function ProduceCard({
   onQty: (qty: number) => void
 }) {
   const Icon = ICONS[item.icon] ?? Leaf
+  const img = produceImage(item.id)
   return (
     <div
       className={`group flex flex-col rounded-3xl bg-white p-4 ring-1 ring-brand-100 transition-all ${
@@ -566,16 +702,21 @@ function ProduceCard({
           : 'opacity-70'
       }`}
     >
-      <div
-        className={`relative flex h-28 items-center justify-center rounded-2xl sm:h-32 ${
-          item.category === 'fruit' ? 'bg-amber-50' : 'bg-leaf-100'
-        }`}
-      >
-        <Icon
-          className={`h-14 w-14 transition-transform group-hover:scale-110 ${
-            item.category === 'fruit' ? 'text-amber-500' : 'text-leaf-500'
-          }`}
-        />
+      <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-2xl bg-[#f6f5f0] sm:h-32">
+        {img ? (
+          <img
+            src={img}
+            alt={`${item.name} (${item.hinglish})`}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <Icon
+            className={`h-14 w-14 transition-transform group-hover:scale-110 ${
+              item.category === 'fruit' ? 'text-amber-500' : 'text-leaf-500'
+            }`}
+          />
+        )}
         {item.seasonal && item.available && (
           <span className="absolute left-2 top-2 rounded-full bg-brand-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-leaf-200">
             Seasonal
@@ -595,11 +736,14 @@ function ProduceCard({
           {item.hinglish} · <span className="font-medium">{item.hindi}</span>
         </p>
         <p className="mt-2 text-sm font-bold text-brand-900">
-          {inr(item.price)}
+          {inr(retailRate(item.price))}
           <span className="text-xs font-medium text-brand-500">
             {' '}
             / {item.unit}
           </span>
+        </p>
+        <p className="mt-0.5 text-[11px] font-medium text-leaf-500">
+          50+ {item.unit}: {inr(wholesaleRate(item.price))}/{item.unit}
         </p>
       </div>
       <div className="mt-3">

@@ -16,10 +16,19 @@ export const SITE = {
   // FormSubmit delivers the enquiry form to the mailbox below without any backend.
   // After the first submission, FormSubmit emails a one-time activation link to this address.
   formEndpoint: 'https://formsubmit.co/ajax/info@globaltradewave.com',
-  // Live produce pricing: paste your Google Sheet ID here (the long code in the
-  // sheet's URL) after sharing it as "Anyone with the link can view".
-  // Daily price edits in the sheet then appear on the site automatically.
-  // Leave empty ('') to always use the built-in prices in data/produce.ts.
+  // Live produce pricing (primary): prices.json in the GitHub repo, refreshed
+  // automatically every morning by the "Daily mandi price update" GitHub
+  // Action from APMC Azadpur rates. The site fetches it on every visit with
+  // no caching, so prices are always current.
+  pricesJsonUrl:
+    'https://raw.githubusercontent.com/Shaista07/agro-trade-global-hub/main/prices.json',
+  // 45-day per-commodity rate + arrival history, regenerated daily by the
+  // same GitHub Action. Powers the Mandi Bhav trends & forecast chart.
+  historyJsonUrl:
+    'https://raw.githubusercontent.com/Shaista07/agro-trade-global-hub/main/history.json',
+  // Live produce pricing (optional override): paste a Google Sheet ID here
+  // (shared as "Anyone with the link can view") and its prices take priority
+  // over the auto-generated prices.json. Leave empty ('') to disable.
   livePricesSheetId: '',
 } as const
 

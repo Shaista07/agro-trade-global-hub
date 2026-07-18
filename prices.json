@@ -1,0 +1,106 @@
+{
+  "date": "2026-07-18",
+  "source": "APMC Azadpur maximum wholesale rates (base for tier margins)",
+  "prices": {
+    "potato": {
+      "price": 14,
+      "available": true
+    },
+    "onion": {
+      "price": 30,
+      "available": true
+    },
+    "tomato": {
+      "price": 40,
+      "available": true
+    },
+    "ginger": {
+      "price": 140,
+      "available": true
+    },
+    "okra": {
+      "price": 30,
+      "available": true
+    },
+    "bottle-gourd": {
+      "price": 25,
+      "available": true
+    },
+    "brinjal": {
+      "price": 25,
+      "available": true
+    },
+    "cauliflower": {
+      "price": 30,
+      "available": true
+    },
+    "cabbage": {
+      "price": 8,
+      "available": true
+    },
+    "green-peas": {
+      "price": 120,
+      "available": true
+    },
+    "spinach": {
+      "price": 15,
+      "available": true
+    },
+    "lemon": {
+      "price": 30,
+      "available": true
+    },
+    "cucumber": {
+      "price": 20,
+      "available": true
+    },
+    "capsicum": {
+      "price": 55,
+      "available": true
+    },
+    "pumpkin": {
+      "price": 15,
+      "available": true
+    },
+    "french-beans": {
+      "price": 60,
+      "available": true
+    },
+    "radish": {
+      "price": 10,
+      "available": true
+    },
+    "ridge-gourd": {
+      "price": 35,
+      "available": true
+    },
+    "banana": {
+      "price": 25,
+      "available": true
+    },
+    "apple": {
+      "price": 160,
+      "available": true
+    },
+    "papaya": {
+      "price": 30,
+      "available": true
+    },
+    "orange": {
+      "price": 50,
+      "available": true
+    },
+    "guava": {
+      "price": 60,
+      "available": true
+    },
+    "watermelon": {
+      "price": 20,
+      "available": true
+    },
+    "pineapple": {
+      "price": 50,
+      "available": true
+    }
+  }
+}

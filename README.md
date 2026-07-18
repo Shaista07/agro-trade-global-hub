@@ -50,28 +50,54 @@ Upload the **contents of `dist/`** to your web host — that folder is a drop-in
 replacement for the current live site. `_redirects` (Netlify) and `vercel.json`
 (Vercel) are included but not required, since hash routing works everywhere.
 
-## Updating Prices Daily (Google Sheet — recommended)
+## Updating Prices Daily (automatic — APMC mandi rates)
 
-The shop can read live prices from a Google Sheet you own — edit the sheet
-anytime and the site updates automatically, no rebuild or re-upload needed.
+Prices update **by themselves** every morning:
 
-**One-time setup (5 minutes):**
+1. The GitHub Action `.github/workflows/daily-prices.yml` runs at ~7:00 AM IST
+2. It downloads the day's P.T.R. PDF from APMC Azadpur (Delhi), parses the
+   wholesale **Maximum** rate and arrival tonnage per commodity, and commits
+   two files to this repo:
+   - `prices.json` — today's base rate per item
+   - `history.json` — rolling 45-day rate + arrival history per item
+     (powers the Mandi Bhav trends & forecast chart)
+3. The website fetches both files on every visit (no caching) — visitors
+   always see the current day's prices and up-to-date charts
 
-1. Create a new Google Sheet. In the first tab, paste this header in row 1:
-   `id` | `price` | `available`
-2. Add one row per item, using the IDs from `src/data/produce.ts`, e.g.:
-   `potato` | `32` | `yes`
-3. **Share → General access → "Anyone with the link" → Viewer**
-4. Copy the sheet ID from the URL (the long code between `/d/` and `/edit`)
-5. Paste it into `src/data/site.ts` → `livePricesSheetId`, then
-   `npm run build` and upload `dist/` once. Done forever.
+**Customer-facing prices** are computed on the site from the base rate via
+quantity tiers (`src/data/pricing.ts`):
 
-**Daily ops:** just edit the `price` column each morning. Set `available` to
-`no` to mark an item out of stock (shows "Stock mein nahi" on the site).
-Leave a price cell empty to fall back to the built-in default.
+| Quantity | Rate |
+|---|---|
+| 0–10 kg | base (APMC max) + 30% |
+| 10–20 kg | base + 20% |
+| 20–50 kg | base + 15% |
+| 50+ kg | base + 10% (wholesale) |
 
-If the sheet is ever unreachable, the site silently falls back to the
-built-in prices in `src/data/produce.ts` — the shop never breaks.
+Fresh-cut vegetables (any vegetable, customer-described cut) cost the
+applicable tier rate + 15%. Tier margins, the cut premium, and labels are all
+editable in `src/data/pricing.ts`.
+
+Items missing from the day's mandi report keep their previous price. If the
+APMC site is down, the action fails safely and the site keeps the last good
+prices. Manual run: GitHub → Actions → "Daily mandi price update" → Run
+workflow.
+
+### Mandi Bhav — Trends & Forecast chart
+
+The Fresh Produce page includes a per-commodity chart (`src/components/PriceTrends.tsx`):
+30 days of retail rates (APMC max + 30%) and arrival tonnage from `history.json`,
+plus a 3-day forecast using a **volume-weighted moving average** (weights = mandi
+arrival volumes, damped trend capped at ±2%/day). The chart is labelled as an
+indicative forecast, not binding. Items with fewer than 7 days of history are
+excluded automatically; if `history.json` is unavailable the section hides itself.
+
+### Optional manual override (Google Sheet)
+
+To override any auto price manually, create a Google Sheet with columns
+`id,price,available`, share as "Anyone with the link can view", and paste its
+ID into `src/data/site.ts` → `livePricesSheetId`. Sheet entries take
+priority over the auto-generated prices. Leave empty to disable.
 
 ## Editing Products in Code (alternative)
 

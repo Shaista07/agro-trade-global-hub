@@ -2,7 +2,7 @@
  * Network-first for pages, cache-first for static assets.
  * Bump CACHE_VERSION on every deploy to invalidate old caches.
  */
-const CACHE_VERSION = 'gtw-fresh-v1'
+const CACHE_VERSION = 'gtw-fresh-v5'
 const CORE_ASSETS = [
   '/',
   '/index.html',
