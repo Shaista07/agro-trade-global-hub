@@ -1,9 +1,9 @@
 {
-  "date": "2026-07-24",
+  "date": "2026-07-25",
   "source": "APMC Azadpur maximum wholesale rates (base for tier margins)",
   "prices": {
     "potato": {
-      "price": 14,
+      "price": 16,
       "available": true
     },
     "onion": {
