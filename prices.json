@@ -1,5 +1,5 @@
 {
-  "date": "2026-08-29",
+  "date": "2026-08-30",
   "source": "APMC Azadpur maximum wholesale rates (base for tier margins)",
   "prices": {
     "potato": {
@@ -31,7 +31,7 @@
       "available": true
     },
     "cauliflower": {
-      "price": 40,
+      "price": 35,
       "available": true
     },
     "cabbage": {
