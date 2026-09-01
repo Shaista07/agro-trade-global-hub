@@ -1,5 +1,5 @@
 {
-  "date": "2026-08-31",
+  "date": "2026-09-01",
   "source": "APMC Azadpur maximum wholesale rates (base for tier margins)",
   "prices": {
     "potato": {
@@ -11,11 +11,11 @@
       "available": true
     },
     "tomato": {
-      "price": 36,
+      "price": 34,
       "available": true
     },
     "ginger": {
-      "price": 110,
+      "price": 100,
       "available": true
     },
     "okra": {
@@ -47,7 +47,7 @@
       "available": true
     },
     "lemon": {
-      "price": 60,
+      "price": 65,
       "available": true
     },
     "cucumber": {
@@ -71,7 +71,7 @@
       "available": true
     },
     "ridge-gourd": {
-      "price": 25,
+      "price": 30,
       "available": true
     },
     "banana": {
@@ -87,7 +87,7 @@
       "available": true
     },
     "orange": {
-      "price": 41,
+      "price": 40,
       "available": true
     },
     "guava": {
@@ -95,7 +95,7 @@
       "available": true
     },
     "watermelon": {
-      "price": 17,
+      "price": 16,
       "available": true
     },
     "pineapple": {
