@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-05",
+  "date": "2026-09-06",
   "source": "APMC Azadpur maximum wholesale rates (base for tier margins)",
   "prices": {
     "potato": {
@@ -7,7 +7,7 @@
       "available": true
     },
     "onion": {
-      "price": 48,
+      "price": 46,
       "available": true
     },
     "tomato": {
@@ -31,11 +31,11 @@
       "available": true
     },
     "cauliflower": {
-      "price": 40,
+      "price": 45,
       "available": true
     },
     "cabbage": {
-      "price": 20,
+      "price": 22,
       "available": true
     },
     "green-peas": {
@@ -71,7 +71,7 @@
       "available": true
     },
     "ridge-gourd": {
-      "price": 30,
+      "price": 35,
       "available": true
     },
     "banana": {
