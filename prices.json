@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-29",
+  "date": "2026-09-30",
   "source": "APMC Azadpur maximum wholesale rates (base for tier margins)",
   "prices": {
     "potato": {
@@ -39,7 +39,7 @@
       "available": true
     },
     "green-peas": {
-      "price": 80,
+      "price": 100,
       "available": true
     },
     "spinach": {
@@ -71,7 +71,7 @@
       "available": true
     },
     "ridge-gourd": {
-      "price": 20,
+      "price": 25,
       "available": true
     },
     "banana": {
@@ -79,7 +79,7 @@
       "available": true
     },
     "apple": {
-      "price": 210,
+      "price": 200,
       "available": true
     },
     "papaya": {
@@ -91,7 +91,7 @@
       "available": true
     },
     "guava": {
-      "price": 100,
+      "price": 110,
       "available": true
     },
     "watermelon": {
